@@ -15,7 +15,7 @@ The core objective is to develop and deploy a fully automated pipeline for a Jav
 
 ## Technologies Used
 
-* **Language:** Java 11
+* **Language:** Java 17
 * **Build Tool:** Apache Maven
 * **Web Framework:** Java Servlets
 * **Testing:** JUnit 4
@@ -46,7 +46,11 @@ NumberGuessGame/
 │           └── com
 │               └── studentapp
 │                   └── NumberGuessServletTest.java
-└── Jenkinsfile
+└──README.md
+|
+|── .gitignore
+|
+|── jenkinsfile
 ```
 
 ## Local Build and Test Instructions
@@ -77,7 +81,7 @@ NumberGuessGame/
     mvn test
 ```
 
-4. **Package the application into a WAR file:**
+1. **Package the application into a WAR file:**
 
 ```bash
     mvn package
@@ -124,4 +128,4 @@ To ensure effective teamwork and maintain a clean codebase, this project follows
 
 * [omotomiwa afonja](https://github.com/omotomiwa26)
 * [onoh chisom](https://github.com/Munachis0)
-* [olubunmi adekanmbi](https://github.com/)
+* [olubunmi adekanmbi](https://github.com/olubunmi-ade)
