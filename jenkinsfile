@@ -1,0 +1,66 @@
+// The 'pipeline' block defines the entire set of stages.
+pipeline {
+    // 'agent any' means Jenkins can use any available agent to run this pipeline.
+    agent any
+
+    // The 'tools' block specifies tools pre-configured in Jenkins to use.
+    tools {
+        maven 'Maven3'   // Must match the name in Jenkins > Tools
+        jdk 'JDK17'      // Must match the name in Jenkins > Tools
+    }
+
+    // The 'stages' block contains the sequence of steps in the pipeline.
+    stages {
+        // --- CI STAGES (Run for both PRs and merges) ---
+        stage('1. Checkout') {
+            steps {
+                // 'checkout scm' automatically clones the correct branch or Pull Request.
+                checkout scm
+            }
+        }
+
+        stage('2. Compile') {
+            steps {
+                // Uses Maven to compile the Java source code.
+                sh 'mvn compile'
+            }
+        }
+
+        stage('3. Unit Test') {
+            steps {
+                // Runs the JUnit tests defined in the project.
+                sh 'mvn test'
+            }
+        }
+
+        stage('4. Code Quality Scan') {
+            steps {
+                // This wrapper injects the SonarQube server configuration.
+                // 'MySonarQube' must match the name in Jenkins > Configure System.
+                withSonarQubeEnv('MySonarQube') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        // --- CD STAGE (Runs ONLY on merge/push to develop) ---
+        stage('5. Build & Deploy') {
+            when {
+                // This stage only executes if the current branch being built is 'develop'.
+                // It will be SKIPPED for all Pull Request validation builds.
+                branch 'develop'
+            }
+            steps {
+                echo "Branch is 'develop'. Proceeding to build and deploy the application."
+
+                // Package the application into a .war file.
+                sh 'mvn package'
+
+                // Deploy the generated .war file to the Tomcat server.
+                // It uses the 'tomcat-credentials' ID from Jenkins Credentials.
+                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: 'http://54.89.168.109:8080')],
+                       contextPath: 'NumberGuessGame', war: 'target/*.war'
+            }
+        }
+    }
+}
