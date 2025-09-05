@@ -124,6 +124,6 @@ To ensure effective teamwork and maintain a clean codebase, this project follows
 
 ## Team Members
 
-* [omotomiwa afonja](https://github.com/omotomiwa26)
-* [onoh chisom](https://github.com/Munachis0)
+* [Omotomiwa Afonja](https://github.com/omotomiwa26)
+* [Onoh Chisom](https://github.com/Munachis0)
 * [olubunmi adekanmbi](https://github.com/olubunmi-ade)
