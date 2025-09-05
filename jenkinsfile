@@ -3,6 +3,11 @@ pipeline {
     // 'agent any' means Jenkins can use any available agent to run this pipeline.
     agent any
 
+    environment {
+        // Load the 'tomcat-url' credential into an environment variable named TOMCAT_URL
+        TOMCAT_URL = credentials('tomcat-url')
+    }
+
     // The 'tools' block specifies tools pre-configured in Jenkins to use.
     tools {
         maven 'Maven3'   // Must match the name in Jenkins > Tools
@@ -58,7 +63,7 @@ pipeline {
 
                 // Deploy the generated .war file to the Tomcat server.
                 // It uses the 'tomcat-credentials' ID from Jenkins Credentials.
-                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: 'http://54.89.168.109:8080')],
+                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: env.TOMCAT_URL)],
                        contextPath: 'NumberGuessGame', war: 'target/*.war'
             }
         }
