@@ -55,7 +55,7 @@ NumberGuessGame/
 
 ### Prerequisites
 
-* Java Development Kit (JDK) 11
+* Java Development Kit (JDK) 17
 * Apache Maven
 
 ### Commands
@@ -89,7 +89,7 @@ This will generate a `NumberGuessGame.war` file in the `target/` directory, whic
 
 ## CI/CD Pipeline Overview
 
-The entire build, test, and deployment process is automated using a Jenkins pipeline, defined in the `Jenkinsfile` at the root of this repository[cite: 11].
+The entire build, test, and deployment process is automated using a Jenkins pipeline, defined in the `Jenkinsfile` at the root of this repository.
 
 ### Pipeline Triggers
 
@@ -101,7 +101,7 @@ The entire build, test, and deployment process is automated using a Jenkins pipe
 1. **Checkout:** Clones the source code from the GitHub repository.
 2. **Compile:** Compiles the Java source code using Maven.
 3. **Unit Test:** Executes all JUnit tests to ensure code correctness and prevent regressions.
-4. **Code Quality Scan:** Performs a static code analysis using SonarQube to check for bugs, vulnerabilities, and code smells, ensuring code quality and maintainability[cite: 13].
+4. **Code Quality Scan:** Performs a static code analysis using SonarQube to check for bugs, vulnerabilities, and code smells, ensuring code quality and maintainability.
 5. **Build Package:** Packages the compiled application into a `.war` artifact if all previous stages succeed.
 6. **Deploy to Tomcat:** Deploys the `.war` artifact to a running Apache Tomcat server, making the application accessible via a web browser. This stage only runs on successful merges to the `develop` branch.
 
