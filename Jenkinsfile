@@ -1,71 +1,73 @@
-// The 'pipeline' block defines the entire set of stages.
 pipeline {
-    // 'agent any' means Jenkins can use any available agent to run this pipeline.
     agent any
 
     environment {
-        // Load the 'tomcat-url' credential into an environment variable named TOMCAT_URL
         TOMCAT_URL = credentials('tomcat-url')
     }
 
-    // The 'tools' block specifies tools pre-configured in Jenkins to use.
     tools {
-        maven 'Maven3'   // Must match the name in Jenkins > Tools
-        jdk 'JDK17'    // Must match the name in Jenkins > Tools (JDK17)
+        maven 'Maven3'
+        jdk 'JDK11'
     }
 
-    // The 'stages' block contains the sequence of steps in the pipeline.
     stages {
-        // --- CI STAGES (Run for both PRs and merges) ---
         stage('1. Checkout') {
             steps {
-                // 'checkout scm' automatically clones the correct branch or Pull Request.
                 checkout scm
             }
         }
 
         stage('2. Compile') {
             steps {
-                // Uses Maven to compile the Java source code.
                 sh 'mvn compile'
             }
         }
 
         stage('3. Unit Test') {
             steps {
-                // Runs the JUnit tests defined in the project.
                 sh 'mvn test'
             }
         }
 
         stage('4. Code Quality Scan') {
             steps {
-                // This wrapper injects the SonarQube server configuration.
-                // 'MySonarQube' must match the name in Jenkins > Configure System.
                 withSonarQubeEnv('MySonarQube') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
 
-        // --- CD STAGE (Runs ONLY on merge/push to develop) ---
-        stage('5. Build & Deploy') {
+        stage('5. Publish to Nexus') {
+            steps {
+                
+                when { branch 'develop' }
+                withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
+                    sh 'mvn deploy'
+                }
+            }
+        }
+
+        stage('6. Deploy to Tomcat') {
             when {
-                // This stage only executes if the current branch being built is 'develop'.
-                // It will be SKIPPED for all Pull Request validation builds.
                 branch 'develop'
             }
             steps {
-                echo "Branch is 'develop'. Proceeding to build and deploy the application."
-
-                // Package the application into a .war file.
                 sh 'mvn package'
-
-                // Deploy the generated .war file to the Tomcat server.
-                // It uses the 'tomcat' ID from Jenkins Credentials.
-                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: env.TOMCAT_URL)],
+                deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: env.TOMCAT_URL)],
                        contextPath: 'NumberGuessGame', war: 'target/NumberGuessGame.war'
             }
+        }
+    }
+
+    post {
+        success {
+            slackSend channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
+        }
+        failure {
+            slackSend channel: '#number-guess-game-ci-cd-build-alert', color: 'danger', message: """
+            FAILED: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. 
+            Check console: ${env.BUILD_URL}
+            """
         }
     }
 }
