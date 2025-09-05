@@ -16,7 +16,7 @@ The core objective is to develop and deploy a fully automated pipeline for a Jav
 ## Technologies Used
 
 * **Language:** Java 17
-* **Build Tool:** Apache Maven
+* **Build Tool:** Apache Maven3
 * **Web Framework:** Java Servlets
 * **Testing:** JUnit 4
 * **CI/CD Server:** Jenkins
@@ -56,7 +56,7 @@ NumberGuessGame/
 ### Prerequisites
 
 * Java Development Kit (JDK) 17
-* Apache Maven
+* Apache Maven3
 
 ### Commands
 
