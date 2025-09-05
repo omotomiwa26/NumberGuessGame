@@ -79,7 +79,7 @@ NumberGuessGame/
     mvn test
 ```
 
-1. **Package the application into a WAR file:**
+4. **Package the application into a WAR file:**
 
 ```bash
     mvn package
