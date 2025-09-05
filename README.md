@@ -46,7 +46,7 @@ NumberGuessGame/
 │           └── com
 │               └── studentapp
 │                   └── NumberGuessServletTest.java
-└──README.md
+├── README.md
 ├── .gitignore
 └── jenkinsfile
 ```
