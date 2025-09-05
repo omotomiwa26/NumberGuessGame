@@ -51,7 +51,7 @@ public class NumberGuessServletTest {
     @Test
     public void testGuessOutOfRange() throws Exception {
         // Mock a guess that is too high, outside the 1-100 range.
-        Mockit.when(request.getParameter("guess")).thenReturn("101");
+        Mockito.when(request.getParameter("guess")).thenReturn("101");
         servlet.doPost(request, response);
         assertTrue(responseWriter.toString().contains("Your guess is outside the range"));
     }
@@ -60,7 +60,7 @@ public class NumberGuessServletTest {
     @Test
     public void testInvalidGuess() throws Exception {
         // Mock an invalid input that cannot be parsed as an integer.
-        Mockit.when(request.getParameter("guess")).thenReturn("abc");
+        Mockito.when(request.getParameter("guess")).thenReturn("abc");
         servlet.doPost(request, response);
         assertTrue(responseWriter.toString().contains("That's not a valid number!"));
     }
