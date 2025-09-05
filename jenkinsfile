@@ -62,7 +62,7 @@ pipeline {
                 sh 'mvn package'
 
                 // Deploy the generated .war file to the Tomcat server.
-                // It uses the 'tomcat-credentials' ID from Jenkins Credentials.
+                // It uses the 'tomcat' ID from Jenkins Credentials.
                 deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: env.TOMCAT_URL)],
                        contextPath: 'NumberGuessGame', war: 'target/*.war'
             }
