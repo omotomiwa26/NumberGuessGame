@@ -11,7 +11,7 @@ pipeline {
     // The 'tools' block specifies tools pre-configured in Jenkins to use.
     tools {
         maven 'Maven3'   // Must match the name in Jenkins > Tools
-        jdk 'JDK17'      // Must match the name in Jenkins > Tools
+        jdk 'Java 17'    // Must match the name in Jenkins > Tools (Java 17)
     }
 
     // The 'stages' block contains the sequence of steps in the pipeline.
