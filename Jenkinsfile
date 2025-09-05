@@ -38,14 +38,16 @@ pipeline {
         }
 
         stage('5. Publish to Nexus') {
-            steps {
-                
-                when { branch 'develop' }
-                withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
-                    sh 'mvn deploy'
-                }
+           // CORRECT: 'when' is a direct child of 'stage'
+        when {
+            branch 'develop'
+        }
+        steps {
+            withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
+                sh 'mvn deploy'
             }
         }
+    }
 
         stage('6. Deploy to Tomcat') {
             when {
@@ -61,13 +63,10 @@ pipeline {
 
     post {
         success {
-            slackSend channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
+            slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
         }
         failure {
-            slackSend channel: '#number-guess-game-ci-cd-build-alert', color: 'danger', message: """
-            FAILED: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. 
-            Check console: ${env.BUILD_URL}
-            """
+            slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'danger', message: "FAILED: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Check console: ${env.BUILD_URL}"
         }
     }
 }
