@@ -126,4 +126,4 @@ To ensure effective teamwork and maintain a clean codebase, this project follows
 
 * [Omotomiwa Afonja](https://github.com/omotomiwa26)
 * [Onoh Chisom](https://github.com/Munachis0)
-* [olubunmi adekanmbi](https://github.com/olubunmi-ade)
+* [Olubunmi Adekanmbi](https://github.com/olubunmi-ade)
