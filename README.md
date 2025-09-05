@@ -47,10 +47,8 @@ NumberGuessGame/
 │               └── studentapp
 │                   └── NumberGuessServletTest.java
 └──README.md
-|
-|── .gitignore
-|
-|── jenkinsfile
+├── .gitignore
+└── jenkinsfile
 ```
 
 ## Local Build and Test Instructions
