@@ -62,7 +62,7 @@ public class NumberGuessServletTest {
         // Mock an invalid input that cannot be parsed as an integer.
         Mockito.when(request.getParameter("guess")).thenReturn("abc");
         servlet.doPost(request, response);
-        assertTrue(responseWriter.toString().contains("That's not a valid number!"));
+        assertTrue(responseWriter.toString().contains("Invalid input. Please enter a valid number."));
     }
 }
 
