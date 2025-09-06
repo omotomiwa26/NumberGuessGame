@@ -38,7 +38,6 @@ pipeline {
         }
 
         stage('5. Publish to Nexus') {
-           // CORRECT: 'when' is a direct child of 'stage'
         when {
             branch 'develop'
         }
