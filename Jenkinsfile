@@ -37,19 +37,19 @@ pipeline {
             }
         }
 
-        stage('5. Publish to Nexus') {
-            when {
-                branch 'develop'
-            }
-            steps { 
-                withMaven(maven: 'Maven3', globalMavenSettingsConfig: '', mavenSettingsConfig: 'nexus-maven-config') {
+        // stage('5. Publish to Nexus') {
+        //     when {
+        //         branch 'develop'
+        //     }
+        //     steps { 
+        //         withMaven(maven: 'Maven3', globalMavenSettingsConfig: '', mavenSettingsConfig: 'nexus-maven-config') {
                    
-                    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-                        sh 'mvn deploy'
-                    }
-                }
-            }
-        }
+        //             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+        //                 sh 'mvn deploy'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('6. Deploy to Tomcat') {
             when {
