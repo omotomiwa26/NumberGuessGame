@@ -41,8 +41,8 @@ pipeline {
             when {
                 branch 'develop'
             }
-            steps {
-                withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
+            steps { 
+                withMaven(maven: 'Maven3', globalMavenSettingsConfig: '', mavenSettingsConfig: 'nexus-maven-config') {
                    
                     withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
                         sh 'mvn deploy'
@@ -57,7 +57,7 @@ pipeline {
             }
             steps {
                 sh 'mvn package'
-                // Use a wildcard to find the correct WAR file
+                
                 deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: env.TOMCAT_URL)],
                        contextPath: 'NumberGuessGame', war: 'target/*.war'
             }
