@@ -48,7 +48,7 @@ pipeline {
         sh 'sudo cp target/*.war /var/lib/tomcat9/webapps/ROOT.war'
     }
 }
-
+    }
     post {
         success {
             slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
