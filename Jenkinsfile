@@ -49,17 +49,6 @@ pipeline {
         }
     }
 }
-
-## Action Plan
-
-    Update the "Publish to Nexus" stage in your Jenkinsfile to use the withCredentials wrapper as shown above.
-
-    Commit and push this change.
-
-Your Jenkinsfile will now be syntactically correct for your version of Jenkins, and it will be able to properly authenticate with your Nexus server.
-
-
-Gemini can make mistakes, so double-check it 
                 sh 'mvn deploy'
             }
         }
