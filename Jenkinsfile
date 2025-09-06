@@ -36,7 +36,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('6. Deploy to Tomcat') {
             when {
                 branch 'develop'
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 sh 'mvn package'
                 
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: env.TOMCAT_URL)],
+                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: env.TOMCAT_URL)],
                        contextPath: 'NumberGuessGame', war: 'target/*.war'
             }
         }
