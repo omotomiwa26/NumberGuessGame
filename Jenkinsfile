@@ -37,17 +37,32 @@ pipeline {
             }
         }
 
-        stage('5. Deploy to Tomcat') {
+     stage('5. Deploy to Tomcat') {
     when {
         branch 'develop'
     }
     steps {
         sh 'mvn package'
-        echo "Deploying WAR file to Tomcat..."
-    
-        sh 'sudo cp target/*.war /var/lib/tomcat9/webapps/ROOT.war'
+        echo "Starting a clean deployment to Tomcat..."
+        
+        // Use a multi-line shell script for a robust deployment
+        sh '''
+            echo "Stopping Tomcat..."
+            sudo systemctl stop tomcat9
+
+            echo "Cleaning up old application..."
+            sudo rm -rf /var/lib/tomcat9/webapps/ROOT
+            sudo rm -f /var/lib/tomcat9/webapps/ROOT.war
+
+            echo "Copying new WAR file..."
+            sudo cp target/*.war /var/lib/tomcat9/webapps/ROOT.war
+
+            echo "Starting Tomcat..."
+            sudo systemctl start tomcat9
+        '''
     }
 }
+
     }
     post {
         success {
