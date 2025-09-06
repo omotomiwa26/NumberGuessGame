@@ -43,8 +43,8 @@ pipeline {
             }
             steps {
                 withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
-                    // Use the correct credential ID: 'nexus-credentials'
-                    withCredentials([usernamePassword(credentialsId: 'nexus-snapshots', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                   
+                    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
                         sh 'mvn deploy'
                     }
                 }
