@@ -42,7 +42,24 @@ pipeline {
             branch 'develop'
         }
         steps {
-            withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config', mavenCredentialsId: 'nexus-snapshots' ) {
+            withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config' ) {
+                withCredentials([usernamePassword(credentialsId: 'nexus-snapshots', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                sh 'mvn deploy'
+            }
+        }
+    }
+}
+
+## Action Plan
+
+    Update the "Publish to Nexus" stage in your Jenkinsfile to use the withCredentials wrapper as shown above.
+
+    Commit and push this change.
+
+Your Jenkinsfile will now be syntactically correct for your version of Jenkins, and it will be able to properly authenticate with your Nexus server.
+
+
+Gemini can make mistakes, so double-check it 
                 sh 'mvn deploy'
             }
         }
