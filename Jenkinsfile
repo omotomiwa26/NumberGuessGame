@@ -37,7 +37,7 @@ pipeline {
             }
         }
 
- stage('5. Deploy to Tomcat') {
+stage('5. Deploy to Tomcat') {
     when {
         branch 'develop'
     }
@@ -50,14 +50,14 @@ pipeline {
             sudo systemctl stop tomcat9
 
             echo "Cleaning up old application..."
-            sudo rm -rf /var/lib/tomcat9/webapps/ROOT
-            sudo rm -f /var/lib/tomcat9/webapps/ROOT.war
+            sudo rm -rf /var/lib/tomcat9/webapps/NumberGuessGame
+            sudo rm -f /var/lib/tomcat9/webapps/NumberGuessGame.war
 
             echo "Copying new WAR file..."
-            sudo cp target/*.war /var/lib/tomcat9/webapps/ROOT.war
+            sudo cp target/*.war /var/lib/tomcat9/webapps/NumberGuessGame.war
 
             echo "Changing ownership to the tomcat user..."
-            sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/ROOT.war
+            sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
 
             echo "Starting Tomcat..."
             sudo systemctl start tomcat9
