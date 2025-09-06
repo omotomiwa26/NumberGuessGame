@@ -42,7 +42,7 @@ pipeline {
             branch 'develop'
         }
         steps {
-            withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config') {
+            withMaven(maven: 'Maven3', mavenSettingsConfig: 'nexus-maven-config', mavenCredentialsId: 'nexus-snapshots' ) {
                 sh 'mvn deploy'
             }
         }
