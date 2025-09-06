@@ -37,18 +37,17 @@ pipeline {
             }
         }
 
-        stage('6. Deploy to Tomcat') {
-            when {
-                branch 'develop'
-            }
-            steps {
-                sh 'mvn package'
-                
-                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: env.TOMCAT_URL)],
-                       contextPath: 'NumberGuessGame', war: 'target/*.war'
-            }
-        }
+        stage('5. Deploy to Tomcat') {
+    when {
+        branch 'develop'
     }
+    steps {
+        sh 'mvn package'
+        echo "Deploying WAR file to Tomcat..."
+    
+        sh 'sudo cp target/*.war /var/lib/tomcat9/webapps/ROOT.war'
+    }
+}
 
     post {
         success {
