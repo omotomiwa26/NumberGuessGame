@@ -175,7 +175,7 @@ pipeline {
                 } catch (err) {
                     slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert',
                         color: 'danger',
-                        message: "⚠️ Rollback FAILED for `${env.BRANCH_NAME}`. Please Check Build Now!!!"
+                        message: "⚠️ Rollback FAILED for `${env.BRANCH_NAME}`. Please Check Build Now!!"
                     error("Rollback failed: ${err}")
                 }
             }
