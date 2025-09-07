@@ -1,77 +1,261 @@
 pipeline {
     agent any
 
-    environment {
-        TOMCAT_URL = credentials('tomcat-url')
-    }
-
     tools {
         maven 'Maven3'
         jdk 'JDK17'
     }
 
     stages {
-        stage('1. Checkout') {
+        stage('1. Checkout Source') {
             steps {
+                script {
+                    echo "🔄 Checking out source code from ${env.BRANCH_NAME}"
+                }
                 checkout scm
             }
         }
 
-        stage('2. Compile') {
+        stage('2. Compile Code') {
             steps {
+                script {
+                    echo "⚙️ Compiling source on branch: ${env.BRANCH_NAME}"
+                }
                 sh 'mvn compile'
             }
         }
 
-        stage('3. Unit Test') {
+        stage('3. Run Unit Tests') {
             steps {
+                script {
+                    echo "🧪 Running unit tests for ${env.BRANCH_NAME}"
+                }
                 sh 'mvn test'
             }
         }
 
-        stage('4. Code Quality Scan') {
+        stage('4. Code Quality Scan (SonarQube)') {
             steps {
+                script {
+                    echo "🔍 Running SonarQube scan on ${env.BRANCH_NAME}"
+                }
                 withSonarQubeEnv('MySonarQube') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
 
-stage('5. Deploy to Tomcat') {
-    when {
-        branch 'develop'
+        // Deploy to Dev (develop branch only)
+        stage('5. Deploy to Dev Tomcat') {
+            when {
+                allOf {
+                    branch 'develop'
+                    not { changeRequest() }
+                }
+            }
+            steps {
+                script {
+                    echo "🚀 Deploying build ${env.BUILD_NUMBER} to DEV Tomcat from branch: ${env.BRANCH_NAME}"
+                }
+
+                sh 'mvn package'
+
+                sh '''
+                    echo "Stopping Tomcat..."
+                    sudo systemctl stop tomcat9
+
+                    echo "Cleaning up old application..."
+                    sudo rm -rf /var/lib/tomcat9/webapps/NumberGuessGame
+                    sudo rm -f /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Copying new WAR file..."
+                    sudo cp target/*.war /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Changing ownership to the tomcat user..."
+                    sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Starting Tomcat..."
+                    sudo systemctl start tomcat9
+                '''
+            }
+        }
+
+        // Deploy to Prod (main branch only)
+        stage('6. Deploy to Prod Tomcat') {
+            when {
+                allOf {
+                    branch 'main'
+                    not { changeRequest() }
+                }
+            }
+            steps {
+                script {
+                    echo "🚀 Deploying build ${env.BUILD_NUMBER} to PROD Tomcat from branch: ${env.BRANCH_NAME}"
+                }
+
+                sh 'mvn package'
+
+                sh '''
+                    echo "Stopping Tomcat..."
+                    sudo systemctl stop tomcat9
+
+                    echo "Cleaning up old application..."
+                    sudo rm -rf /var/lib/tomcat9/webapps/NumberGuessGame
+                    sudo rm -f /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Copying new WAR file..."
+                    sudo cp target/*.war /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Changing ownership to the tomcat user..."
+                    sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                    echo "Starting Tomcat..."
+                    sudo systemctl start tomcat9
+                '''
+            }
+        }
     }
-    steps {
-        sh 'mvn package'
-        echo "Starting a final, clean deployment to Tomcat..."
-        
-        sh '''
-            echo "Stopping Tomcat..."
-            sudo systemctl stop tomcat9
 
-            echo "Cleaning up old application..."
-            sudo rm -rf /var/lib/tomcat9/webapps/NumberGuessGame
-            sudo rm -f /var/lib/tomcat9/webapps/NumberGuessGame.war
-
-            echo "Copying new WAR file..."
-            sudo cp target/*.war /var/lib/tomcat9/webapps/NumberGuessGame.war
-
-            echo "Changing ownership to the tomcat user..."
-            sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
-
-            echo "Starting Tomcat..."
-            sudo systemctl start tomcat9
-        '''
-    }
-}
-
-    }
     post {
         success {
-            slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
+            script {
+                def buildType = (env.CHANGE_ID) ? "PR Build" : env.BRANCH_NAME
+                slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert',
+                    color: 'good',
+                    message: "✅ SUCCESSFUL: `${buildType}` | Job `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`\n🔗 Details: ${env.BUILD_URL}"
+
+                // Auto-backup WAR after successful deploy on develop or main
+                if (env.BRANCH_NAME == "develop" || env.BRANCH_NAME == "main") {
+                    sh '''
+                        BACKUP_DIR=/var/lib/tomcat9/backups
+                        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+                        echo "📦 Backing up deployed WAR as NumberGuessGame-$TIMESTAMP.war..."
+                        sudo cp /var/lib/tomcat9/webapps/NumberGuessGame.war $BACKUP_DIR/NumberGuessGame-$TIMESTAMP.war
+
+                        echo "Updating last-stable.war symlink..."
+                        sudo ln -sf $BACKUP_DIR/NumberGuessGame-$TIMESTAMP.war $BACKUP_DIR/last-stable.war
+                        sudo chown -h tomcat:tomcat $BACKUP_DIR/last-stable.war
+                    '''
+                }
+            }
         }
+
         failure {
-            slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'danger', message: "FAILED: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Check console: ${env.BUILD_URL}"
+            script {
+                def buildType = (env.CHANGE_ID) ? "PR Build" : env.BRANCH_NAME
+                slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert',
+                    color: 'danger',
+                    message: "❌ FAILED: `${buildType}` | Job `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`\n🔗 Console: ${env.BUILD_URL}"
+
+                // Rollback only for real branches
+                if (env.BRANCH_NAME == "develop" || env.BRANCH_NAME == "main") {
+                    echo "⚠️ Deployment failed on ${env.BRANCH_NAME}, initiating rollback..."
+                    try {
+                        sh '''
+                            echo "Stopping Tomcat..."
+                            sudo systemctl stop tomcat9
+
+                            echo "Restoring last stable WAR..."
+                            sudo cp /var/lib/tomcat9/backups/last-stable.war /var/lib/tomcat9/webapps/NumberGuessGame.war
+                            sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+                            echo "Starting Tomcat..."
+                            sudo systemctl start tomcat9
+                        '''
+                        slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert',
+                            color: 'warning',
+                            message: "🔄 Rollback completed successfully for `${env.BRANCH_NAME}` after failed deploy."
+                    } catch (err) {
+                        slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert',
+                            color: 'danger',
+                            message: "⚠️ Rollback FAILED for `${env.BRANCH_NAME}`. Please Check Pipeline!!!"
+                        error("Rollback failed: ${err}")
+                    }
+                }
+            }
         }
     }
 }
+
+
+
+
+
+// pipeline {
+//     agent any
+
+//     environment {
+//         TOMCAT_URL = credentials('tomcat-url')
+//     }
+
+//     tools {
+//         maven 'Maven3'
+//         jdk 'JDK17'
+//     }
+
+//     stages {
+//         stage('1. Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
+
+//         stage('2. Compile') {
+//             steps {
+//                 sh 'mvn compile'
+//             }
+//         }
+
+//         stage('3. Unit Test') {
+//             steps {
+//                 sh 'mvn test'
+//             }
+//         }
+
+//         stage('4. Code Quality Scan') {
+//             steps {
+//                 withSonarQubeEnv('MySonarQube') {
+//                     sh 'mvn sonar:sonar'
+//                 }
+//             }
+//         }
+
+// stage('5. Deploy to Tomcat') {
+//     when {
+//         branch 'develop'
+//     }
+//     steps {
+//         sh 'mvn package'
+//         echo "Starting a final, clean deployment to Tomcat..."
+        
+//         sh '''
+//             echo "Stopping Tomcat..."
+//             sudo systemctl stop tomcat9
+
+//             echo "Cleaning up old application..."
+//             sudo rm -rf /var/lib/tomcat9/webapps/NumberGuessGame
+//             sudo rm -f /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+//             echo "Copying new WAR file..."
+//             sudo cp target/*.war /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+//             echo "Changing ownership to the tomcat user..."
+//             sudo chown tomcat:tomcat /var/lib/tomcat9/webapps/NumberGuessGame.war
+
+//             echo "Starting Tomcat..."
+//             sudo systemctl start tomcat9
+//         '''
+//     }
+// }
+
+//     }
+//     post {
+//         success {
+//             slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'good', message: "SUCCESSFUL: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Details: ${env.BUILD_URL}"
+//         }
+//         failure {
+//             slackSend botUser: true, channel: '#number-guess-game-ci-cd-build-alert', color: 'danger', message: "FAILED: `${env.JOB_NAME}` build `${env.BUILD_NUMBER}`. Check console: ${env.BUILD_URL}"
+//         }
+//     }
+// }
