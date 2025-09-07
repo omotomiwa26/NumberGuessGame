@@ -8,9 +8,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 public class NumberGuessServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
     private int targetNumber;
+
+    public int getTargetNumber() {
+        return targetNumber;
+    }
 
     public void init() throws ServletException {
         targetNumber = new Random().nextInt(100) + 1;
@@ -33,7 +39,10 @@ public class NumberGuessServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         try {
             int guess = Integer.parseInt(request.getParameter("guess"));
-            if (guess < targetNumber) {
+
+            if (guess < 1 || guess > 100) {
+                out.println("<h2>Your guess is outside the range of 1 to 100. Try again!</h2>");
+            } else if (guess < targetNumber) {
                 out.println("<h2>Your guess is too low. Try again!</h2>");
             } else if (guess > targetNumber) {
                 out.println("<h2>Your guess is too high. Try again!</h2>");
